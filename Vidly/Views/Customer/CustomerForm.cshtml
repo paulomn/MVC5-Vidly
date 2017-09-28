@@ -1,0 +1,65 @@
+﻿
+@model Vidly.ViewModels.CustomerFormViewModel
+@{
+    ViewBag.Title = "CustomerForm";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@if (Model.Customer.Id == 0)
+{
+    <h2>New Customer</h2>
+}
+else
+{
+    <h2>Edit Customer</h2>
+}
+
+<!--Without using, it renders just <FORM>-->
+<!--With using, it renders just <FORM> and </FORM>-->
+@using (Html.BeginForm("Save", "Customer"))
+{
+    //@Html.ValidationSummary()
+    //You can you this one to display custom message and individual errors
+    @Html.ValidationSummary(true, "Please fix the following errors:")
+    <div class="form-group">
+        @Html.LabelFor(m => m.Customer.Name)
+        @Html.TextBoxFor(m => m.Customer.Name, new { @class = "form-control" })
+        @Html.ValidationMessageFor(m => m.Customer.Name)
+    </div>
+    <div class="form-group">
+        @Html.LabelFor(m => m.Customer.MemberShipTypeId)
+        @Html.DropDownListFor(m => m.Customer.MemberShipTypeId, new SelectList(Model.MembershipTypes, "Id", "Name"), "Select Membership Type", new { @class = "form-control" })
+        @Html.ValidationMessageFor(m => m.Customer.MemberShipTypeId)
+    </div>
+    <div class="form-group">
+        <label for="BirthDate">Date of Birth</label>
+        @Html.TextBoxFor(m => m.Customer.BirthDate, "{0:d MMM yyyy}", new { @class = "form-control" })
+        @Html.ValidationMessageFor(m => m.Customer.BirthDate)
+    </div>
+    <div class="checkbox">
+        <label>
+            @Html.CheckBoxFor(m => m.Customer.IsSubscribedToNewsletter) Subscribed to newsletter?
+        </label>
+    </div>
+
+    @Html.HiddenFor(m => m.Customer.Id)
+    <!--Enable protection mechanism-->
+    <!--It creates a cookie and a hidden field, comparing them-->
+    <!--If they are not the same, it is not a reliable connection-->
+    @Html.AntiForgeryToken()
+    <button type="submit" class="btn btn-primary">Save</button>
+} 
+
+@section scripts
+{
+     <!--Enable client side validation-->
+     <!--Only works with standard data annotations (class ValidationMin18Years will not work at all)-->
+     <!--/[Range(1, 10)]-->
+     <!--[Compare("Other Property")]-->
+     <!--[Phone]-->
+     <!--[EmailAddress]-->
+     <!--[URL]-->
+     <!--[RegularExpression("...")]-->
+    
+    @Scripts.Render("~/bundles/jqueryval")
+}

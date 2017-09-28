@@ -1,0 +1,87 @@
+﻿@using Vidly.Models
+
+@model IEnumerable<Vidly.Models.Customer>
+
+@{
+    ViewBag.Title = "Customer";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Customers</h2>
+
+<p>
+    @Html.ActionLink("New Customer", "New", "Customer", null, new { @class = "btn btn-primary" })
+</p>
+<div class="table-responsive">
+    <table id="customers" class="table table-hover table-striped table-bordered">
+        <thead>
+            <tr>
+                <th>Customer</th>
+                <th>Membership Type</th>
+                <th>Delete</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
+
+    <!--Using install-package jquery.datatables -version:1.10.11-->
+    <!--Using install-package automapper -version:4.1-->
+    <!--Using install-package bootbox -version:4.3.0-->
+
+    @section scripts
+{
+        <script>
+            $(document).ready(function () {
+
+                //Fill data table
+                //var table to get the table and delete a line
+                var table = $("#customers").DataTable({
+                    ajax: {
+                        url: "/api/customer",
+                        dataSrc: ""
+                    },
+                    columns: [
+                        {
+                            data: "name",
+                            render: function (data, type, customer) {
+                                return "<a href='/customer/edit/'" + customer.id + "'>" + customer.name + '</a>';
+
+                            }
+                        },
+                        {
+                            data: "membershipType.name"
+                        },
+                        {
+                            data: "id",
+                            render: function (data) {
+                                return "<button class='btn-link js-delete' data-customer-id=" + data + ">Delete</button>"
+                            }
+                        }
+                    ]
+                });
+
+                //One attached function for each customer... better one function and a filter
+                //$("#customers .js-delete").on("click", function () {
+                //One function handling all customers
+                $("#customers").on("click", ".js-delete", function () {
+                    //Because inside ajax, the context for (this) always change
+                    var button = $(this);
+
+                    bootbox.confirm("Are you sure you want to delete this customer?", function (result) {
+                        if (result) {
+                            $.ajax({
+                                url: "/api/customer/" + button.attr("data-customer-id"),
+                                method: "DELETE",
+                                success: function () {
+                                    //Just remove TR and keeps the customer in datatable internals (BUG)
+                                    //button.parents("tr").remove();
+                                    table.row(button.parents("tr")).remove().draw();
+                                }
+                            });
+                        }
+                    });
+                });
+            });
+        </script>
+    }
